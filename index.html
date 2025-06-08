@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bothering Animal Species - Wildlife Information</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#3b82f6',secondary:'#10b981'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .species-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .species-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal.hidden .modal-content {
+            transform: scale(0.9);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .distribution-map {
+            background-image: url('https://public.readdy.ai/gen_page/map_placeholder_1280x720.png');
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .custom-checkbox {
+            position: relative;
+            cursor: pointer;
+        }
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .checkmark {
+            position: relative;
+            height: 20px;
+            width: 20px;
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+        .custom-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .custom-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e2e8f0;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        .gallery-thumb {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .gallery-thumb.active {
+            border-color: #3b82f6;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="#" class="text-2xl font-['Pacifico'] text-primary mr-10">logo</a>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-900 font-medium hover:text-primary transition-colors">Home</a>
+                    <a href="#" class="text-primary font-medium border-b-2 border-primary">Species</a>
+                    <a href="#" class="text-gray-900 font-medium hover:text-primary transition-colors">Conservation</a>
+                    <a href="#" class="text-gray-900 font-medium hover:text-primary transition-colors">Research</a>
+                    <a href="#" class="text-gray-900 font-medium hover:text-primary transition-colors">About</a>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="hidden md:flex items-center justify-center text-gray-700 hover:text-primary transition-colors">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                        <i class="ri-bookmark-line ri-lg"></i>
+                    </div>
+                </button>
+                <button class="hidden md:flex items-center justify-center text-gray-700 hover:text-primary transition-colors">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                        <i class="ri-notification-line ri-lg"></i>
+                    </div>
+                </button>
+                <button class="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-blue-600 transition-colors whitespace-nowrap">
+                    Report Sighting
+                </button>
+                <button class="md:hidden flex items-center justify-center text-gray-700">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                        <i class="ri-menu-line ri-lg"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative h-[500px] overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-gray-900/30 z-10"></div>
+        <div style="background-image: url('https://readdy.ai/api/search-image?query=A%20dramatic%20wildlife%20scene%20showing%20various%20bothering%20animal%20species%20in%20their%20natural%20habitat.%20The%20image%20captures%20diverse%20wildlife%20including%20bears%2C%20wolves%2C%20coyotes%2C%20raccoons%2C%20and%20wild%20boars%20in%20a%20lush%20forest%20setting%20with%20mountains%20in%20the%20background.%20The%20lighting%20is%20dramatic%20with%20golden%20hour%20sunlight%20filtering%20through%20trees%2C%20creating%20a%20majestic%20atmosphere&width=1920&height=1080&seq=1&orientation=landscape');" class="absolute inset-0 bg-cover bg-center"></div>
+        <div class="container mx-auto px-4 h-full flex items-center relative z-20">
+            <div class="max-w-3xl">
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Bothering Animal Species</h1>
+                <p class="text-xl text-gray-100 mb-8">Discover wildlife species that frequently come into conflict with human activities and learn how to coexist peacefully with these important members of our ecosystem.</p>
+                <div class="flex flex-wrap gap-4">
+                    <button class="bg-primary text-white px-6 py-3 rounded-button font-medium hover:bg-blue-600 transition-colors whitespace-nowrap">
+                        Explore Species
+                    </button>
+                    <button class="bg-white text-gray-900 px-6 py-3 rounded-button font-medium hover:bg-gray-100 transition-colors whitespace-nowrap">
+                        Conservation Guide
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search and Filter Section -->
+    <section class="bg-white py-8 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <div class="relative w-full md:w-1/3">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none w-10 h-10">
+                        <i class="ri-search-line text-gray-400"></i>
+                    </div>
+                    <input type="text" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none" placeholder="Search species...">
+                </div>
+                
+                <div class="w-full md:w-auto flex flex-col md:flex-row gap-4">
+                    <div class="relative w-full md:w-auto">
+                        <div class="flex items-center border border-gray-300 rounded overflow-hidden">
+                            <div class="flex items-center px-3 text-gray-500 border-r border-gray-300 h-10">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <div class="relative w-full">
+                                <button id="regionDropdown" class="flex items-center justify-between w-full px-4 py-2 text-left text-gray-700 bg-white hover:bg-gray-50 focus:outline-none pr-8 whitespace-nowrap">
+                                    <span>All Regions</span>
+                                    <div class="w-5 h-5 flex items-center justify-center">
+                                        <i class="ri-arrow-down-s-line"></i>
+                                    </div>
+                                </button>
+                                <div id="regionOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                                    <ul class="py-1 max-h-60 overflow-auto">
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">All Regions</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">North America</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Europe</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Asia</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Africa</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Australia</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative w-full md:w-auto">
+                        <div class="flex items-center border border-gray-300 rounded overflow-hidden">
+                            <div class="flex items-center px-3 text-gray-500 border-r border-gray-300 h-10">
+                                <i class="ri-home-line"></i>
+                            </div>
+                            <div class="relative w-full">
+                                <button id="habitatDropdown" class="flex items-center justify-between w-full px-4 py-2 text-left text-gray-700 bg-white hover:bg-gray-50 focus:outline-none pr-8 whitespace-nowrap">
+                                    <span>All Habitats</span>
+                                    <div class="w-5 h-5 flex items-center justify-center">
+                                        <i class="ri-arrow-down-s-line"></i>
+                                    </div>
+                                </button>
+                                <div id="habitatOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                                    <ul class="py-1 max-h-60 overflow-auto">
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">All Habitats</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Forest</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Urban</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Grassland</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Wetland</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Mountain</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative w-full md:w-auto">
+                        <div class="flex items-center border border-gray-300 rounded overflow-hidden">
+                            <div class="flex items-center px-3 text-gray-500 border-r border-gray-300 h-10">
+                                <i class="ri-alert-line"></i>
+                            </div>
+                            <div class="relative w-full">
+                                <button id="threatDropdown" class="flex items-center justify-between w-full px-4 py-2 text-left text-gray-700 bg-white hover:bg-gray-50 focus:outline-none pr-8 whitespace-nowrap">
+                                    <span>All Threat Levels</span>
+                                    <div class="w-5 h-5 flex items-center justify-center">
+                                        <i class="ri-arrow-down-s-line"></i>
+                                    </div>
+                                </button>
+                                <div id="threatOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                                    <ul class="py-1 max-h-60 overflow-auto">
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">All Threat Levels</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">High</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Medium</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Low</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative w-full md:w-auto">
+                        <div class="flex items-center border border-gray-300 rounded overflow-hidden">
+                            <div class="flex items-center px-3 text-gray-500 border-r border-gray-300 h-10">
+                                <i class="ri-sort-asc"></i>
+                            </div>
+                            <div class="relative w-full">
+                                <button id="sortDropdown" class="flex items-center justify-between w-full px-4 py-2 text-left text-gray-700 bg-white hover:bg-gray-50 focus:outline-none pr-8 whitespace-nowrap">
+                                    <span>Sort: Alphabetical</span>
+                                    <div class="w-5 h-5 flex items-center justify-center">
+                                        <i class="ri-arrow-down-s-line"></i>
+                                    </div>
+                                </button>
+                                <div id="sortOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                                    <ul class="py-1 max-h-60 overflow-auto">
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Alphabetical</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Threat Level (High-Low)</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Threat Level (Low-High)</li>
+                                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Most Common</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Species Grid Layout -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Bothering Animal Species</h2>
+                <p class="text-gray-600">Explore animals that frequently interact with human environments and activities.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Species Card 1 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20North%20American%20black%20bear%20%28Ursus%20americanus%29%20in%20a%20forest%20setting.%20The%20bear%20has%20a%20glossy%20black%20coat%20and%20is%20standing%20alert%20with%20its%20head%20slightly%20raised%2C%20showing%20its%20distinctive%20profile%20with%20a%20straight%20facial%20shape%20and%20prominent%20ears.%20The%20background%20shows%20a%20lush%20green%20forest%20with%20dappled%20sunlight%20filtering%20through%20the%20trees%2C%20creating%20a%20natural%20habitat%20scene&width=800&height=450&seq=2&orientation=landscape" alt="Black Bear" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">High Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Black Bear</h3>
+                                <p class="text-sm text-gray-500 italic">Ursus americanus</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">Large omnivorous mammals that often raid garbage cans, bird feeders, and occasionally enter homes in search of food. They can become dangerous when habituated to human food sources.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>North America</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="black-bear">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Species Card 2 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20coyote%20%28Canis%20latrans%29%20in%20a%20suburban%20environment.%20The%20coyote%20has%20a%20tan%20and%20gray%20coat%20with%20alert%2C%20upright%20ears%20and%20a%20bushy%20tail.%20It%20is%20standing%20on%20the%20edge%20of%20a%20residential%20area%20with%20houses%20visible%20in%20the%20background.%20The%20image%20captures%20the%20coyotes%20lean%2C%20dog-like%20appearance%20and%20watchful%20yellow%20eyes%2C%20highlighting%20its%20adaptability%20to%20human-modified%20landscapes&width=800&height=450&seq=3&orientation=landscape" alt="Coyote" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">Medium Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Coyote</h3>
+                                <p class="text-sm text-gray-500 italic">Canis latrans</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">Highly adaptable predators that have expanded into urban areas. They may prey on small pets, raid garbage, and occasionally approach humans, especially if fed or habituated.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>North America</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="coyote">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Species Card 3 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20raccoon%20%28Procyon%20lotor%29%20at%20night%20near%20urban%20trash%20cans.%20The%20raccoon%20has%20its%20distinctive%20black%20mask%20across%20its%20eyes%20and%20ringed%20tail.%20It%20is%20illuminated%20by%20ambient%20light%2C%20showing%20its%20grayish-brown%20fur%20and%20dexterous%20front%20paws%20as%20it%20investigates%20or%20opens%20a%20garbage%20container.%20The%20background%20suggests%20a%20residential%20setting%20with%20subtle%20house%20lights%20visible%2C%20capturing%20the%20raccoons%20nocturnal%20urban%20foraging%20behavior&width=800&height=450&seq=4&orientation=landscape" alt="Raccoon" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Low Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Raccoon</h3>
+                                <p class="text-sm text-gray-500 italic">Procyon lotor</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">Intelligent and dexterous mammals that excel at opening containers and accessing human food sources. They frequently raid garbage cans and may nest in attics or chimneys.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>North America</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="raccoon">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Species Card 4 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20wild%20boar%20%28Sus%20scrofa%29%20in%20a%20damaged%20agricultural%20field.%20The%20boar%20has%20dark%20brown%20to%20black%20coarse%20hair%2C%20a%20distinctive%20elongated%20snout%2C%20and%20tusks%20visible%20from%20its%20mouth.%20It%20is%20standing%20in%20a%20field%20that%20shows%20evidence%20of%20rooting%20behavior%2C%20with%20disturbed%20soil%20and%20damaged%20crops%20visible.%20The%20image%20captures%20the%20boars%20sturdy%20build%20and%20powerful%20appearance%2C%20highlighting%20the%20agricultural%20damage%20these%20animals%20can%20cause&width=800&height=450&seq=5&orientation=landscape" alt="Wild Boar" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">High Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Wild Boar</h3>
+                                <p class="text-sm text-gray-500 italic">Sus scrofa</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">Highly destructive to agricultural lands and natural habitats through their rooting behavior. They can be aggressive when cornered and reproduce rapidly, making them difficult to control.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>Worldwide</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="wild-boar">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Species Card 5 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20Canadian%20goose%20%28Branta%20canadensis%29%20in%20an%20urban%20park%20setting.%20The%20goose%20has%20its%20distinctive%20black%20head%20and%20neck%20with%20white%20chinstrap%20marking%2C%20and%20brownish-gray%20body.%20It%20is%20standing%20on%20grass%20near%20a%20walkway%20or%20recreational%20area%20with%20some%20water%20visible%20nearby.%20The%20image%20captures%20the%20gooses%20alert%20posture%20and%20territorial%20demeanor%2C%20highlighting%20how%20these%20birds%20have%20adapted%20to%20urban%20environments%20where%20they%20often%20come%20into%20conflict%20with%20humans&width=800&height=450&seq=6&orientation=landscape" alt="Canadian Goose" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Low Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Canadian Goose</h3>
+                                <p class="text-sm text-gray-500 italic">Branta canadensis</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">These large birds often establish territories in parks, golf courses, and other grassy areas near water. They can be aggressive during nesting season and produce significant waste.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>North America</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="canadian-goose">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Species Card 6 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20white-tailed%20deer%20%28Odocoileus%20virginianus%29%20in%20a%20suburban%20garden%20or%20yard.%20The%20deer%20has%20a%20reddish-brown%20summer%20coat%2C%20alert%20ears%2C%20and%20is%20browsing%20on%20ornamental%20plants%20or%20garden%20vegetation.%20The%20background%20shows%20residential%20landscaping%20with%20evidence%20of%20the%20deers%20feeding%20impact%20on%20cultivated%20plants.%20The%20image%20captures%20the%20deers%20graceful%20appearance%20while%20highlighting%20its%20role%20as%20a%20garden%20pest%20in%20suburban%20environments&width=800&height=450&seq=7&orientation=landscape" alt="White-tailed Deer" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">Medium Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">White-tailed Deer</h3>
+                                <p class="text-sm text-gray-500 italic">Odocoileus virginianus</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">Adaptable herbivores that thrive in suburban environments. They damage gardens and landscaping, spread tick-borne diseases, and cause numerous vehicle collisions annually.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>North America</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="white-tailed-deer">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Species Card 7 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20European%20starling%20%28Sturnus%20vulgaris%29%20perched%20on%20a%20building%20ledge%20or%20structure.%20The%20starling%20has%20iridescent%20black%20feathers%20with%20a%20metallic%20sheen%20showing%20purples%20and%20greens%2C%20and%20a%20yellow%20beak.%20The%20background%20shows%20an%20urban%20or%20suburban%20setting%20with%20multiple%20starlings%20visible%2C%20suggesting%20their%20flocking%20behavior.%20The%20image%20captures%20the%20birds%20speckled%20appearance%20and%20adaptability%20to%20human%20structures%2C%20where%20they%20often%20nest%20in%20large%20numbers%20causing%20noise%20and%20waste%20issues&width=800&height=450&seq=8&orientation=landscape" alt="European Starling" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">Low Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">European Starling</h3>
+                                <p class="text-sm text-gray-500 italic">Sturnus vulgaris</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">Invasive birds that form large, noisy flocks. They compete with native cavity-nesting birds, damage crops, and create unsanitary conditions when roosting in large numbers on buildings.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>North America, Europe</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="european-starling">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Species Card 8 -->
+                <div class="species-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative">
+                        <img src="https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20coypu%20or%20nutria%20%28Myocastor%20coypus%29%20in%20a%20wetland%20environment%20that%20shows%20signs%20of%20damage.%20The%20large%20rodent%20has%20brown%20fur%2C%20prominent%20orange%20front%20teeth%2C%20and%20distinctive%20white%20whiskers.%20It%20is%20partially%20in%20water%20near%20a%20bank%20that%20shows%20evidence%20of%20erosion%20and%20damaged%20vegetation%20from%20its%20feeding%20and%20burrowing%20activities.%20The%20image%20captures%20the%20animals%20rat-like%20appearance%20but%20much%20larger%20size%2C%20highlighting%20its%20destructive%20impact%20on%20wetland%20ecosystems%20and%20water%20management%20infrastructure&width=800&height=450&seq=9&orientation=landscape" alt="Nutria" class="w-full h-56 object-cover object-top">
+                        <div class="absolute top-3 right-3 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded">Medium Threat</div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Nutria</h3>
+                                <p class="text-sm text-gray-500 italic">Myocastor coypus</p>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <div class="w-8 h-8 flex items-center justify-center">
+                                    <i class="ri-bookmark-line"></i>
+                                </div>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-4">Large, invasive rodents that damage wetlands, agricultural lands, and water management systems through their feeding and burrowing behaviors. They reproduce rapidly and are difficult to control.</p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center text-sm text-gray-500">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-map-pin-line"></i>
+                                </div>
+                                <span>North America, Europe</span>
+                            </div>
+                            <button class="text-primary font-medium text-sm hover:underline view-details" data-species="nutria">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-10 flex justify-center">
+                <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-button mr-2 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                    <div class="w-5 h-5 flex items-center justify-center mr-1 inline-block">
+                        <i class="ri-arrow-left-s-line"></i>
+                    </div>
+                    Previous
+                </button>
+                <button class="bg-primary text-white px-4 py-2 rounded-button mx-1 hover:bg-blue-600 transition-colors whitespace-nowrap">1</button>
+                <button class="bg-white text-gray-700 px-4 py-2 rounded-button mx-1 hover:bg-gray-50 transition-colors whitespace-nowrap">2</button>
+                <button class="bg-white text-gray-700 px-4 py-2 rounded-button mx-1 hover:bg-gray-50 transition-colors whitespace-nowrap">3</button>
+                <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-button ml-2 hover:bg-gray-50 transition-colors whitespace-nowrap">
+                    Next
+                    <div class="w-5 h-5 flex items-center justify-center ml-1 inline-block">
+                        <i class="ri-arrow-right-s-line"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Wildlife Conflict Statistics</h2>
+                <p class="text-gray-600 max-w-3xl mx-auto">Understanding the impact of human-wildlife conflicts helps us develop better management and coexistence strategies.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Annual Human-Wildlife Conflicts by Species</h3>
+                    <div id="conflictChart" class="w-full h-80"></div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Property Damage Cost by Region</h3>
+                    <div id="damageChart" class="w-full h-80"></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center text-primary">
+                            <i class="ri-car-line ri-2x"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">1.5 Million</h3>
+                    <p class="text-gray-600 text-center">Annual wildlife-vehicle collisions in the United States, with deer accounting for approximately 75% of these incidents.</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center text-primary">
+                            <i class="ri-money-dollar-circle-line ri-2x"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">$8 Billion</h3>
+                    <p class="text-gray-600 text-center">Estimated annual economic impact from wildlife damage to crops, livestock, and property in the United States alone.</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center text-primary">
+                            <i class="ri-home-heart-line ri-2x"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 text-center mb-2">42%</h3>
+                    <p class="text-gray-600 text-center">Of urban homeowners report experiencing problems with wildlife on their property in the past year.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prevention Tips Section -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Prevention Tips & Recommendations</h2>
+                <p class="text-gray-600 max-w-3xl mx-auto">Learn how to minimize conflicts with wildlife while promoting coexistence.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 flex items-center justify-center text-primary bg-blue-100 rounded-full mr-3">
+                            <i class="ri-delete-bin-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Secure Your Trash</h3>
+                    </div>
+                    <p class="text-gray-700">Use wildlife-resistant containers and store garbage in secure locations. Put trash out only on collection day, not the night before.</p>
+                    <ul class="mt-4 space-y-2">
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Use metal or heavy plastic containers with tight-fitting lids</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Secure lids with bungee cords or weights if necessary</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Store trash in garages or sheds until collection day</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 flex items-center justify-center text-primary bg-blue-100 rounded-full mr-3">
+                            <i class="ri-plant-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Wildlife-Resistant Landscaping</h3>
+                    </div>
+                    <p class="text-gray-700">Choose plants that are less attractive to wildlife and use physical barriers to protect valuable plantings.</p>
+                    <ul class="mt-4 space-y-2">
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Use deer-resistant plant species in areas with high deer populations</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Install fencing around gardens and valuable plants</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Apply repellents to discourage browsing and digging</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 flex items-center justify-center text-primary bg-blue-100 rounded-full mr-3">
+                            <i class="ri-home-gear-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Seal Entry Points</h3>
+                    </div>
+                    <p class="text-gray-700">Prevent wildlife from entering buildings by sealing potential access points and maintaining structures.</p>
+                    <ul class="mt-4 space-y-2">
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Inspect buildings for gaps and holes regularly</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Install chimney caps and vent covers</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Repair damaged soffits, fascia, and roof edges promptly</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 flex items-center justify-center text-primary bg-blue-100 rounded-full mr-3">
+                            <i class="ri-restaurant-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Remove Food Sources</h3>
+                    </div>
+                    <p class="text-gray-700">Eliminate unintentional food sources that may attract wildlife to your property.</p>
+                    <ul class="mt-4 space-y-2">
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Use bird feeders designed to prevent access by squirrels and other mammals</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Clean up fallen fruit from trees</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Feed pets indoors and don't leave food outside</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 flex items-center justify-center text-primary bg-blue-100 rounded-full mr-3">
+                            <i class="ri-alarm-warning-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Deterrents & Hazing</h3>
+                    </div>
+                    <p class="text-gray-700">Use humane deterrents to discourage wildlife from frequenting your property.</p>
+                    <ul class="mt-4 space-y-2">
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Install motion-activated lights or sprinklers</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Use noise-making devices like air horns to scare away wildlife</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Apply commercially available repellents according to label instructions</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 flex items-center justify-center text-primary bg-blue-100 rounded-full mr-3">
+                            <i class="ri-government-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Know When to Call Professionals</h3>
+                    </div>
+                    <p class="text-gray-700">Understand when a wildlife situation requires professional assistance.</p>
+                    <ul class="mt-4 space-y-2">
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Contact wildlife authorities for aggressive or unusual animal behavior</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Hire licensed wildlife removal experts for animals in buildings</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <span class="text-gray-700">Consult with wildlife management specialists for persistent problems</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-10 text-center">
+                <button class="bg-primary text-white px-6 py-3 rounded-button font-medium hover:bg-blue-600 transition-colors whitespace-nowrap">
+                    Download Complete Prevention Guide
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- Expert Quotes Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Expert Insights</h2>
+                <p class="text-gray-600 max-w-3xl mx-auto">Perspectives from wildlife biologists and management specialists on human-wildlife conflicts.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <div class="flex items-start mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center text-gray-400 bg-gray-200 rounded-full mr-4">
+                            <i class="ri-user-line ri-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Dr. Emily Richardson</h3>
+                            <p class="text-sm text-gray-500">Wildlife Biologist, University of Washington</p>
+                        </div>
+                    </div>
+                    <blockquote class="text-gray-700 italic border-l-4 border-primary pl-4">
+                        "Many wildlife conflicts are preventable through simple changes in human behavior. Understanding animal motivations—usually food, shelter, or protecting young—helps us develop effective, humane solutions that benefit both people and wildlife."
+                    </blockquote>
+                    <p class="mt-4 text-gray-700">Dr. Richardson's research focuses on urban wildlife adaptation and developing coexistence strategies for communities experiencing increased wildlife encounters.</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <div class="flex items-start mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center text-gray-400 bg-gray-200 rounded-full mr-4">
+                            <i class="ri-user-line ri-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Mark Stevenson</h3>
+                            <p class="text-sm text-gray-500">Wildlife Management Specialist, National Wildlife Service</p>
+                        </div>
+                    </div>
+                    <blockquote class="text-gray-700 italic border-l-4 border-primary pl-4">
+                        "The most successful wildlife management approaches integrate scientific understanding with community involvement. When residents take ownership of local solutions, we see more sustainable outcomes and fewer conflicts over time."
+                    </blockquote>
+                    <p class="mt-4 text-gray-700">With over 20 years of field experience, Stevenson has developed community-based wildlife management programs across North America that balance ecological needs with human safety concerns.</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <div class="flex items-start mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center text-gray-400 bg-gray-200 rounded-full mr-4">
+                            <i class="ri-user-line ri-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Dr. Sophia Chen</h3>
+                            <p class="text-sm text-gray-500">Urban Ecology Researcher, Cornell University</p>
+                        </div>
+                    </div>
+                    <blockquote class="text-gray-700 italic border-l-4 border-primary pl-4">
+                        "As our cities expand into natural habitats, we're creating novel ecosystems where certain adaptable species thrive. These 'urban exploiters' aren't problematic by nature—they're simply responding to the resources and opportunities we unintentionally provide."
+                    </blockquote>
+                    <p class="mt-4 text-gray-700">Dr. Chen studies how urbanization affects wildlife behavior and population dynamics, with particular focus on species that successfully adapt to human-dominated landscapes.</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md">
+                    <div class="flex items-start mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center text-gray-400 bg-gray-200 rounded-full mr-4">
+                            <i class="ri-user-line ri-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">James Wilson</h3>
+                            <p class="text-sm text-gray-500">Agricultural Extension Specialist, State University</p>
+                        </div>
+                    </div>
+                    <blockquote class="text-gray-700 italic border-l-4 border-primary pl-4">
+                        "Farmers are on the front lines of wildlife conflicts, but they're also some of our most innovative problem-solvers. The best agricultural practices incorporate wildlife considerations while protecting livelihoods, showing that coexistence is possible even in production landscapes."
+                    </blockquote>
+                    <p class="mt-4 text-gray-700">Wilson works directly with farmers to develop and implement wildlife damage prevention strategies that are economically viable and environmentally responsible.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="py-12 bg-primary bg-opacity-10">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Stay Informed</h2>
+                <p class="text-gray-700 mb-6">Subscribe to our newsletter for the latest information on wildlife management, conflict prevention, and conservation efforts.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                    <input type="email" class="flex-1 px-4 py-3 border-none rounded focus:ring-2 focus:ring-primary outline-none" placeholder="Your email address">
+                    <button class="bg-primary text-white px-6 py-3 rounded-button font-medium hover:bg-blue-600 transition-colors whitespace-nowrap">
+                        Subscribe
+                    </button>
+                </div>
+                
+                <div class="mt-4 flex items-center justify-center">
+                    <label class="custom-checkbox flex items-center">
+                        <input type="checkbox" class="sr-only">
+                        <span class="checkmark mr-2"></span>
+                        <span class="text-sm text-gray-600">I agree to receive email updates and news about wildlife management</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Wildlife Information</h3>
+                    <p class="text-gray-400 mb-4">Providing educational resources and practical solutions for human-wildlife conflicts.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <div class="w-8 h-8 flex items-center justify-center">
+                                <i class="ri-facebook-fill"></i>
+                            </div>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <div class="w-8 h-8 flex items-center justify-center">
+                                <i class="ri-twitter-x-fill"></i>
+                            </div>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <div class="w-8 h-8 flex items-center justify-center">
+                                <i class="ri-instagram-fill"></i>
+                            </div>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <div class="w-8 h-8 flex items-center justify-center">
+                                <i class="ri-youtube-fill"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Species Database</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Prevention Guide</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Report a Sighting</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Conservation Efforts</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Research Publications</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Wildlife Management Agencies</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Educational Materials</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Professional Services</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Community Programs</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Research Initiatives</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Contact Information</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 mr-2 mt-0.5">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <span class="text-gray-400">123 Wildlife Way, Nature City, NC 28000</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 mr-2 mt-0.5">
+                                <i class="ri-phone-line"></i>
+                            </div>
+                            <span class="text-gray-400">(555) 123-4567</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 mr-2 mt-0.5">
+                                <i class="ri-mail-line"></i>
+                            </div>
+                            <span class="text-gray-400">info@wildlifeinfo.org</span>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 mr-2 mt-0.5">
+                                <i class="ri-time-line"></i>
+                            </div>
+                            <span class="text-gray-400">Mon-Fri: 9:00 AM - 5:00 PM</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-4">
+                        <h4 class="font-bold text-gray-300 mb-2">Emergency Wildlife Hotline</h4>
+                        <p class="text-gray-400">(800) WILDLIFE (945-3543)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm mb-4 md:mb-0">&copy; 2025 Wildlife Information Center. All rights reserved.</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Species Detail Modal -->
+    <div id="speciesModal" class="modal hidden fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white z-10 border-b border-gray-200">
+                <div class="flex justify-between items-center p-4">
+                    <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Species Details</h2>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <div class="w-8 h-8 flex items-center justify-center">
+                            <i class="ri-close-line ri-lg"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="modalContent" class="p-4">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script id="dropdownToggleScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdowns = [
+                { button: 'regionDropdown', options: 'regionOptions' },
+                { button: 'habitatDropdown', options: 'habitatOptions' },
+                { button: 'threatDropdown', options: 'threatOptions' },
+                { button: 'sortDropdown', options: 'sortOptions' }
+            ];
+            
+            dropdowns.forEach(dropdown => {
+                const button = document.getElementById(dropdown.button);
+                const options = document.getElementById(dropdown.options);
+                
+                if (button && options) {
+                    button.addEventListener('click', function() {
+                        options.classList.toggle('hidden');
+                    });
+                    
+                    const optionItems = options.querySelectorAll('li');
+                    optionItems.forEach(item => {
+                        item.addEventListener('click', function() {
+                            button.querySelector('span').textContent = this.textContent;
+                            options.classList.add('hidden');
+                        });
+                    });
+                }
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(event) {
+                dropdowns.forEach(dropdown => {
+                    const button = document.getElementById(dropdown.button);
+                    const options = document.getElementById(dropdown.options);
+                    
+                    if (button && options && !button.contains(event.target) && !options.contains(event.target)) {
+                        options.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+    <script id="modalScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('speciesModal');
+            const closeModal = document.getElementById('closeModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            const viewButtons = document.querySelectorAll('.view-details');
+            
+            // Species data (in a real application, this would come from a database)
+            const speciesData = {
+                'black-bear': {
+                    name: 'Black Bear',
+                    scientificName: 'Ursus americanus',
+                    threatLevel: 'High',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20North%20American%20black%20bear%20%28Ursus%20americanus%29%20in%20a%20forest%20setting.%20The%20bear%20has%20a%20glossy%20black%20coat%20and%20is%20standing%20alert%20with%20its%20head%20slightly%20raised%2C%20showing%20its%20distinctive%20profile%20with%20a%20straight%20facial%20shape%20and%20prominent%20ears.%20The%20background%20shows%20a%20lush%20green%20forest%20with%20dappled%20sunlight%20filtering%20through%20the%20trees%2C%20creating%20a%20natural%20habitat%20scene&width=1200&height=600&seq=10&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20black%20bear%20climbing%20a%20tree%20in%20a%20forest%2C%20showing%20its%20powerful%20claws%20and%20climbing%20ability.%20The%20bear%5Cs%20muscular%20body%20is%20visible%20as%20it%20scales%20the%20trunk%2C%20demonstrating%20the%20species%5C%20agility%20despite%20its%20size&width=300&height=200&seq=11&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20black%20bear%20mother%20with%20cubs%20in%20a%20grassy%20meadow.%20The%20protective%20mother%20stands%20watchful%20while%20her%20small%20cubs%20explore%20nearby%2C%20showing%20the%20family%20dynamics%20of%20bears&width=300&height=200&seq=12&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20black%20bear%20foraging%20through%20a%20garbage%20can%20in%20a%20suburban%20setting%20at%20dusk.%20The%20bear%20is%20tipping%20over%20the%20container%20with%20its%20paws%2C%20illustrating%20common%20human-wildlife%20conflict%20scenarios&width=300&height=200&seq=13&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20close-up%20of%20a%20black%20bear%5Cs%20face%20showing%20its%20distinctive%20features%20-%20small%20eyes%2C%20rounded%20ears%2C%20and%20long%20snout.%20The%20image%20captures%20the%20bear%5Cs%20intelligent%20expression%20and%20sensory%20features&width=300&height=200&seq=14&orientation=landscape'
+                    ],
+                    characteristics: 'Black bears are medium-sized bears native to North America. Despite their name, they can be black, brown, cinnamon, or even white in some regions. Adult males typically weigh 130-500 pounds, while females are smaller at 90-300 pounds. They have short, non-retractable claws ideal for climbing trees, a distinctive straight facial profile, and rounded ears. Black bears are excellent swimmers and can run at speeds up to 35 mph for short distances.',
+                    habitat: 'Black bears inhabit a variety of forested environments across North America, from dense woodland to mountain forests and swamplands. They require areas with dense understory vegetation for cover and foraging, and trees for climbing to escape threats. Their range has expanded into suburban areas where natural food sources and human refuse provide reliable nutrition.',
+                    behavior: 'Though typically solitary animals, black bears are not strictly territorial and may tolerate other bears when food is abundant. They are primarily crepuscular (active at dawn and dusk) but may adjust their activity patterns in areas with human presence. Black bears are opportunistic omnivores with a diet consisting of approximately 85% plant matter including berries, nuts, and vegetation, supplemented by insects, fish, small mammals, and carrion. They are adept at locating food sources and have excellent long-term memory for productive feeding sites.',
+                    conflict: 'Human-bear conflicts typically revolve around food sources. Bears readily exploit unsecured garbage, bird feeders, pet food, and agricultural crops. Once habituated to human food, bears become bolder and may damage property to access these high-calorie resources. While generally not aggressive toward humans, bears defending food sources, females with cubs, or bears that feel cornered may become dangerous. Most aggressive encounters result from bears being startled at close range or from inappropriate human behavior such as approaching bears or getting between mothers and cubs.',
+                    population: 'The North American black bear population is estimated at 600,000-750,000 individuals. Population trends vary by region, with some areas experiencing growth while others face pressure from habitat loss and fragmentation. Black bears are considered a species of least concern by the IUCN, though certain isolated subspecies face conservation challenges. Management strategies include regulated hunting seasons, habitat protection, and public education about coexistence practices.',
+                    region: 'North America'
+                },
+                'coyote': {
+                    name: 'Coyote',
+                    scientificName: 'Canis latrans',
+                    threatLevel: 'Medium',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20coyote%20%28Canis%20latrans%29%20in%20a%20suburban%20environment.%20The%20coyote%20has%20a%20tan%20and%20gray%20coat%20with%20alert%2C%20upright%20ears%20and%20a%20bushy%20tail.%20It%20is%20standing%20on%20the%20edge%20of%20a%20residential%20area%20with%20houses%20visible%20in%20the%20background.%20The%20image%20captures%20the%20coyote%5Cs%20lean%2C%20dog-like%20appearance%20and%20watchful%20yellow%20eyes%2C%20highlighting%20its%20adaptability%20to%20human-modified%20landscapes&width=1200&height=600&seq=15&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20coyote%20hunting%20in%20a%20grassy%20field%2C%20poised%20in%20mid-pounce%20as%20it%20targets%20small%20prey.%20The%20image%20captures%20the%20predator%5Cs%20hunting%20technique%20with%20its%20body%20fully%20extended%20in%20the%20air&width=300&height=200&seq=16&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20coyote%20family%20with%20adults%20and%20pups%20outside%20their%20den%20in%20a%20natural%20setting.%20The%20pups%20are%20playing%20while%20adults%20remain%20vigilant%2C%20showing%20their%20family%20structure&width=300&height=200&seq=17&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20coyote%20walking%20through%20a%20suburban%20neighborhood%20at%20night%2C%20captured%20by%20street%20lighting.%20The%20urban-adapted%20predator%20is%20moving%20confidently%20through%20human%20territory&width=300&height=200&seq=18&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20close-up%20portrait%20of%20a%20coyote%5Cs%20face%20showing%20its%20pointed%20ears%2C%20yellow%20eyes%2C%20and%20narrow%20snout.%20The%20image%20highlights%20the%20distinct%20features%20that%20differentiate%20coyotes%20from%20wolves%20and%20domestic%20dogs&width=300&height=200&seq=19&orientation=landscape'
+                    ],
+                    characteristics: 'Coyotes are medium-sized canids with pointed ears, a narrow muzzle, and a bushy, black-tipped tail. They typically weigh 20-50 pounds, with males larger than females. Their fur coloration varies from grayish-brown to yellowish-gray with whitish throat and belly. Coyotes have excellent vision, hearing, and sense of smell, making them highly effective hunters. They are often mistaken for small wolves or German shepherds but can be distinguished by their more delicate features and smaller size.',
+                    habitat: 'Remarkably adaptable, coyotes inhabit almost every ecosystem in North America, from wilderness areas to urban centers. They prefer open areas like prairies and agricultural lands but readily adapt to forests, mountains, deserts, and increasingly, suburban and urban environments. Their expansion into cities is a relatively recent phenomenon, demonstrating their exceptional adaptability to human-modified landscapes.',
+                    behavior: 'Coyotes are typically nocturnal or crepuscular but may adjust their activity patterns in response to human presence. They are social animals that often live in family groups consisting of a mated pair and their offspring, though they frequently hunt alone. Coyotes are vocal communicators, using a variety of howls, yips, and barks to communicate with family members and establish territory. They are opportunistic omnivores with a diet that includes small mammals, birds, reptiles, insects, fruits, and vegetation. In urban areas, they readily consume human food waste and may prey on small pets.',
+                    conflict: 'Human-coyote conflicts primarily involve predation on pets, particularly cats and small dogs. Coyotes may also damage agricultural operations by preying on livestock, especially sheep and poultry. While attacks on humans are rare, they have increased in frequency as coyotes have become more habituated to people, particularly in suburban areas where they may be intentionally or unintentionally fed. Most aggressive encounters involve coyotes that have lost their fear of humans due to feeding or protecting den sites during breeding season.',
+                    population: 'Despite extensive lethal control efforts throughout the 20th century, coyote populations have expanded dramatically across North America. Current population estimates suggest there are several million coyotes continent-wide. Their success is attributed to their adaptability, omnivorous diet, and reproductive capacity. Female coyotes typically produce 4-7 pups per year, but can increase litter sizes in response to population pressure. Management approaches have shifted toward coexistence strategies in many areas, as traditional control methods have proven ineffective at population reduction.',
+                    region: 'North America'
+                },
+                'raccoon': {
+                    name: 'Raccoon',
+                    scientificName: 'Procyon lotor',
+                    threatLevel: 'Low',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20raccoon%20%28Procyon%20lotor%29%20at%20night%20near%20urban%20trash%20cans.%20The%20raccoon%20has%20its%20distinctive%20black%20mask%20across%20its%20eyes%20and%20ringed%20tail.%20It%20is%20illuminated%20by%20ambient%20light%2C%20showing%20its%20grayish-brown%20fur%20and%20dexterous%20front%20paws%20as%20it%20investigates%20or%20opens%20a%20garbage%20container.%20The%20background%20suggests%20a%20residential%20setting%20with%20subtle%20house%20lights%20visible%2C%20capturing%20the%20raccoon%5Cs%20nocturnal%20urban%20foraging%20behavior&width=1200&height=600&seq=20&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20raccoon%20using%20its%20dexterous%20front%20paws%20to%20manipulate%20a%20complex%20object%20or%20food%20item%2C%20demonstrating%20their%20remarkable%20manual%20dexterity%20and%20problem-solving%20abilities&width=300&height=200&seq=21&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20mother%20raccoon%20with%20her%20young%20kits%20following%20in%20a%20line%20along%20a%20fallen%20log%20in%20a%20woodland%20setting%2C%20showing%20their%20family%20structure%20and%20teaching%20behavior&width=300&height=200&seq=22&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20raccoon%20on%20a%20roof%20or%20in%20an%20attic%20space%20of%20a%20house%2C%20illustrating%20how%20these%20animals%20can%20access%20and%20inhabit%20human%20structures%2C%20creating%20potential%20conflicts&width=300&height=200&seq=23&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20close-up%20of%20a%20raccoon%20washing%20food%20in%20water%2C%20showing%20their%20characteristic%20behavior%20of%20manipulating%20food%20items%20in%20water%20before%20consumption&width=300&height=200&seq=24&orientation=landscape'
+                    ],
+                    characteristics: 'Raccoons are medium-sized mammals instantly recognizable by their black "mask" facial markings and ringed tail. Adults typically weigh 10-30 pounds, with males larger than females. They have grayish-brown fur, a pointed snout, and remarkably dexterous front paws with five long, flexible digits that allow them to manipulate complex objects. Raccoons possess excellent night vision, sensitive hearing, and a well-developed sense of touch, particularly in their front paws.',
+                    habitat: 'Originally woodland creatures, raccoons have successfully adapted to a wide range of environments including forests, marshes, prairies, and increasingly, urban and suburban areas. They prefer habitats with trees for denning and water sources nearby. In natural settings, they typically den in hollow trees, rock crevices, or abandoned burrows. In urban environments, they readily utilize attics, chimneys, crawl spaces, storm drains, and other human structures for shelter.',
+                    behavior: 'Raccoons are primarily nocturnal, though they may be active during daylight hours in areas with minimal human disturbance. While not truly social animals, they may den together during cold weather and form loose social groups in areas with abundant food. They are excellent climbers and swimmers. Raccoons are omnivorous opportunists with a diverse diet including fruits, nuts, insects, small animals, eggs, and in urban areas, human food waste. They are known for their habit of "washing" food items, though this behavior is more accurately described as tactile examination of food using their sensitive paws.',
+                    conflict: 'Human-raccoon conflicts center around their adaptability to urban environments and their manual dexterity. Common issues include damage to property when accessing structures for denning, raiding of garbage containers, consumption of pet food left outdoors, and damage to gardens and crops. Raccoons can carry diseases transmissible to humans and pets, including rabies and raccoon roundworm. While not typically aggressive toward humans, they may defend themselves if cornered or if protecting young.',
+                    population: 'Raccoon populations have increased dramatically in North America over the past century, particularly in urban and suburban areas where they benefit from abundant food sources and reduced predation. Current estimates suggest there are 5-10 million raccoons in North America, with some urban areas supporting population densities far higher than would occur in natural habitats. Management approaches focus on exclusion techniques, securing potential food sources, and public education, as lethal control has proven largely ineffective in urban settings.',
+                    region: 'North America'
+                },
+                'wild-boar': {
+                    name: 'Wild Boar',
+                    scientificName: 'Sus scrofa',
+                    threatLevel: 'High',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20wild%20boar%20%28Sus%20scrofa%29%20in%20a%20damaged%20agricultural%20field.%20The%20boar%20has%20dark%20brown%20to%20black%20coarse%20hair%2C%20a%20distinctive%20elongated%20snout%2C%20and%20tusks%20visible%20from%20its%20mouth.%20It%20is%20standing%20in%20a%20field%20that%20shows%20evidence%20of%20rooting%20behavior%2C%20with%20disturbed%20soil%20and%20damaged%20crops%20visible.%20The%20image%20captures%20the%20boar%5Cs%20sturdy%20build%20and%20powerful%20appearance%2C%20highlighting%20the%20agricultural%20damage%20these%20animals%20can%20cause&width=1200&height=600&seq=25&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20sounder%20%28group%29%20of%20wild%20boars%20with%20adults%20and%20striped%20piglets%20moving%20through%20a%20forest%20setting%2C%20showing%20their%20social%20structure%20and%20the%20distinctive%20juvenile%20coloration&width=300&height=200&seq=26&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=Close-up%20of%20a%20wild%20boar%5Cs%20head%20showing%20its%20tusks%2C%20bristly%20hair%2C%20and%20elongated%20snout%20used%20for%20rooting%20in%20soil.%20The%20image%20highlights%20the%20powerful%20features%20that%20make%20this%20animal%20an%20effective%20forager&width=300&height=200&seq=27&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20landscape%20showing%20extensive%20soil%20damage%20from%20wild%20boar%20rooting%20behavior%2C%20with%20large%20areas%20of%20earth%20turned%20over%20and%20vegetation%20destroyed%2C%20illustrating%20their%20environmental%20impact&width=300&height=200&seq=28&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20wild%20boar%20crossing%20a%20road%20or%20moving%20near%20human%20infrastructure%2C%20highlighting%20the%20increasing%20interface%20between%20these%20animals%20and%20human-occupied%20areas&width=300&height=200&seq=29&orientation=landscape'
+                    ],
+                    characteristics: 'Wild boars are large, powerful mammals with a distinctive wedge-shaped head, elongated snout, and prominent tusks (particularly in males). Adults typically weigh 150-400 pounds, though some males can exceed 600 pounds. They have coarse, bristly hair ranging from dark brown to black, and piglets display characteristic cream and brown stripes for camouflage. Wild boars have poor eyesight but excellent hearing and sense of smell. They are surprisingly fast, capable of short sprints up to 30 mph, and are strong swimmers.',
+                    habitat: 'Wild boars are highly adaptable and inhabit a wide range of environments including forests, grasslands, wetlands, agricultural areas, and increasingly, suburban regions. They prefer habitats with dense vegetation for cover and access to water. Originally native to Europe, Asia, and North Africa, they have been introduced worldwide and have established invasive populations in the Americas, Australia, and numerous island nations.',
+                    behavior: 'Wild boars are typically nocturnal or crepuscular, especially in areas with human activity. They are social animals that live in groups called "sounders," consisting of related females and their young. Adult males (boars) are often solitary except during breeding season. Wild boars are omnivorous with a diet primarily consisting of plant material including roots, tubers, nuts, fruits, and crops, supplemented by invertebrates, small vertebrates, eggs, and carrion. Their characteristic rooting behavior, where they use their tough snouts to dig through soil in search of food, can cause extensive environmental damage.',
+                    conflict: 'Wild boars are considered among the most destructive invasive species worldwide. They cause extensive agricultural damage by consuming and trampling crops and damaging fields through rooting behavior. Their rooting also damages natural ecosystems, affects water quality, and contributes to soil erosion. They compete with native wildlife for resources and may prey on ground-nesting birds, reptiles, and small mammals. Wild boars can be aggressive, particularly when cornered or when sows are protecting young. They are also potential vectors for numerous diseases affecting livestock, wildlife, and humans.',
+                    population: 'Global wild boar populations have expanded dramatically in recent decades. In the United States alone, invasive wild boar populations are estimated at 6-9 million animals across at least 35 states, causing an estimated $2.5 billion in annual damages. Their success is attributed to their adaptability, omnivorous diet, high reproductive capacity (producing 1-2 litters annually with 4-12 piglets per litter), and lack of natural predators in many areas. Management efforts include hunting, trapping, exclusion fencing, and in some regions, toxicant development, though complete eradication has proven extremely difficult once populations are established.',
+                    region: 'Worldwide'
+                },
+                'canadian-goose': {
+                    name: 'Canadian Goose',
+                    scientificName: 'Branta canadensis',
+                    threatLevel: 'Low',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20Canadian%20goose%20%28Branta%20canadensis%29%20in%20an%20urban%20park%20setting.%20The%20goose%20has%20its%20distinctive%20black%20head%20and%20neck%20with%20white%20chinstrap%20marking%2C%20and%20brownish-gray%20body.%20It%20is%20standing%20on%20grass%20near%20a%20walkway%20or%20recreational%20area%20with%20some%20water%20visible%20nearby.%20The%20image%20captures%20the%20goose%5Cs%20alert%20posture%20and%20territorial%20demeanor%2C%20highlighting%20how%20these%20birds%20have%20adapted%20to%20urban%20environments%20where%20they%20often%20come%20into%20conflict%20with%20humans&width=1200&height=600&seq=30&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20flock%20of%20Canadian%20geese%20in%20V-formation%20during%20migration%20against%20a%20blue%20sky%2C%20demonstrating%20their%20iconic%20flight%20pattern%20and%20migratory%20behavior&width=300&height=200&seq=31&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20Canadian%20goose%20nest%20with%20eggs%20or%20newly%20hatched%20goslings%2C%20showing%20their%20reproductive%20habits%20and%20nesting%20behavior%20near%20water&width=300&height=200&seq=32&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=Canadian%20geese%20in%20an%20aggressive%20posture%20with%20neck%20extended%20and%20wings%20spread%2C%20demonstrating%20territorial%20behavior%20that%20can%20lead%20to%20conflicts%20with%20humans%20in%20shared%20spaces&width=300&height=200&seq=33&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20park%20or%20golf%20course%20covered%20with%20Canadian%20goose%20droppings%2C%20illustrating%20one%20of%20the%20main%20sources%20of%20human-goose%20conflict%20in%20urban%20recreational%20areas&width=300&height=200&seq=34&orientation=landscape'
+                    ],
+                    characteristics: 'Canadian geese are large waterfowl instantly recognizable by their black head and neck with distinctive white "chinstrap" marking, tan-to-brown body, and black tail and wing tips. Adults typically weigh 7-14 pounds with a wingspan of 4-5.5 feet. Males and females have similar plumage, though males are generally larger. They are strong fliers, swimmers, and can walk effectively on land. Canadian geese are vocal birds with a distinctive honking call used for various forms of communication.',
+                    habitat: 'Traditionally, Canadian geese inhabited temperate regions of North America, nesting near freshwater bodies including lakes, rivers, ponds, and marshes. In recent decades, they have adapted exceptionally well to human-modified landscapes including parks, golf courses, agricultural fields, and suburban areas with manicured lawns adjacent to water features. Many populations have become resident (non-migratory) in urban and suburban areas with year-round food availability and few natural predators.',
+                    behavior: 'Canadian geese are highly social birds that typically live in flocks except during nesting season. They form long-term monogamous pair bonds, often mating for life. While historically migratory, many urban populations have become resident year-round. Their diet consists primarily of plant material including grasses, aquatic vegetation, seeds, and agricultural grains. In urban settings, they readily graze on mowed lawns and may accept handouts from humans, though feeding is discouraged by wildlife management authorities. Canadian geese are territorial during nesting season and may aggressively defend their territory against perceived threats.',
+                    conflict: 'Human-goose conflicts center around their adaptation to urban environments and their abundance in recreational areas. Primary issues include accumulation of droppings on lawns, golf courses, parks, and beaches, which can affect water quality and create slip hazards. During nesting season (spring to early summer), geese may exhibit aggressive defensive behavior toward humans who approach nests or goslings. Large flocks can damage turf through grazing and cause agricultural losses when feeding in crop fields. Geese near airports pose significant aviation safety concerns due to bird strike risks.',
+                    population: 'North American Canadian goose populations have recovered dramatically from near-extinction in the early 20th century to nuisance levels in many areas today. Current continental population estimates exceed 5 million birds. Management approaches include habitat modification (reducing attractiveness of sites), harassment techniques (dogs, noise deterrents), egg addling (preventing hatching), and in some cases, regulated hunting or culling. Many urban conflicts stem from resident (non-migratory) populations that have adapted to year-round living in human-dominated landscapes.',
+                    region: 'North America'
+                },
+                'white-tailed-deer': {
+                    name: 'White-tailed Deer',
+                    scientificName: 'Odocoileus virginianus',
+                    threatLevel: 'Medium',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20white-tailed%20deer%20%28Odocoileus%20virginianus%29%20in%20a%20suburban%20garden%20or%20yard.%20The%20deer%20has%20a%20reddish-brown%20summer%20coat%2C%20alert%20ears%2C%20and%20is%20browsing%20on%20ornamental%20plants%20or%20garden%20vegetation.%20The%20background%20shows%20residential%20landscaping%20with%20evidence%20of%20the%20deer%5Cs%20feeding%20impact%20on%20cultivated%20plants.%20The%20image%20captures%20the%20deer%5Cs%20graceful%20appearance%20while%20highlighting%20its%20role%20as%20a%20garden%20pest%20in%20suburban%20environments&width=1200&height=600&seq=35&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20white-tailed%20deer%20buck%20with%20impressive%20antlers%20during%20autumn%20rutting%20season%2C%20showing%20the%20male%5Cs%20breeding-season%20appearance%20and%20behavior&width=300&height=200&seq=36&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20white-tailed%20deer%20doe%20with%20spotted%20fawn%20in%20a%20forest%20clearing%2C%20demonstrating%20their%20reproductive%20cycle%20and%20the%20characteristic%20juvenile%20coloration&width=300&height=200&seq=37&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20white-tailed%20deer%20crossing%20a%20road%20at%20dusk%20with%20car%20headlights%20visible%2C%20illustrating%20the%20common%20and%20dangerous%20interaction%20between%20deer%20and%20vehicles&width=300&height=200&seq=38&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20garden%20or%20landscape%20showing%20damage%20from%20deer%20browsing%2C%20with%20plants%20stripped%20of%20leaves%20or%20flowers%20and%20distinctive%20jagged%20bite%20marks%20visible%20on%20vegetation&width=300&height=200&seq=39&orientation=landscape'
+                    ],
+                    characteristics: 'White-tailed deer are medium-sized ungulates named for the distinctive white underside of their tail, which they raise like a flag when alarmed. Adults typically weigh 90-300 pounds, with males (bucks) substantially larger than females (does). They have reddish-brown summer coats that transition to grayish-brown in winter. Males grow and shed antlers annually, with antler size generally increasing with age. Fawns are born with distinctive white spots that provide camouflage. White-tailed deer have excellent hearing and sense of smell, with large ears that can rotate independently to detect sounds.',
+                    habitat: 'White-tailed deer are highly adaptable and inhabit a variety of environments including forests, grasslands, farmlands, and increasingly, suburban and urban areas. They prefer edge habitats where different vegetation types meet, providing both food and cover. Originally native to the Americas, their range extends from southern Canada to northern South America. In recent decades, they have thrived in fragmented landscapes created by human development, often reaching higher population densities in suburban areas than in natural habitats.',
+                    behavior: 'White-tailed deer are primarily crepuscular (active at dawn and dusk) but may adjust their activity patterns in response to human presence and hunting pressure. Social structure varies seasonally, with does and fawns forming family groups while bucks are typically solitary or form bachelor groups outside of breeding season (rut). During rut, which occurs in fall, bucks compete for breeding opportunities through displays and occasional combat. Deer are herbivores with a diet consisting of leaves, twigs, fruits, nuts, agricultural crops, and in suburban areas, ornamental plants and garden vegetation.',
+                    conflict: 'Human-deer conflicts have increased dramatically as deer have adapted to suburban environments. Primary issues include damage to landscaping, gardens, and agricultural crops through browsing; vehicle collisions (estimated at 1-2 million annually in the U.S. alone, causing significant property damage, injuries, and fatalities); and ecological damage through overbrowsing that affects forest regeneration and biodiversity. Deer also serve as hosts for ticks that spread Lyme disease and other tick-borne illnesses to humans. In areas with high deer densities, these impacts can be substantial and costly.',
+                    population: 'North American white-tailed deer populations have exploded over the past century from near-extinction (estimated 300,000-500,000 in 1900) to current estimates of 25-30 million. This dramatic recovery is attributed to hunting regulations, predator elimination, agricultural expansion, and suburban development creating ideal deer habitat. Management approaches vary by region and context, including regulated hunting, contraception in some urban areas, fencing, repellents, and habitat modification. The challenge of managing deer in developed areas where hunting is impractical has led to significant debate about appropriate control methods.',
+                    region: 'North America'
+                },
+                'european-starling': {
+                    name: 'European Starling',
+                    scientificName: 'Sturnus vulgaris',
+                    threatLevel: 'Low',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20close-up%20photograph%20of%20a%20European%20starling%20%28Sturnus%20vulgaris%29%20perched%20on%20a%20building%20ledge%20or%20structure.%20The%20starling%20has%20iridescent%20black%20feathers%20with%20a%20metallic%20sheen%20showing%20purples%20and%20greens%2C%20and%20a%20yellow%20beak.%20The%20background%20shows%20an%20urban%20or%20suburban%20setting%20with%20multiple%20starlings%20visible%2C%20suggesting%20their%20flocking%20behavior.%20The%20image%20captures%20the%20bird%5Cs%20speckled%20appearance%20and%20adaptability%20to%20human%20structures%2C%20where%20they%20often%20nest%20in%20large%20numbers%20causing%20noise%20and%20waste%20issues&width=1200&height=600&seq=40&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20massive%20murmuration%20of%20European%20starlings%20forming%20fluid%2C%20dynamic%20patterns%20in%20the%20sky%20at%20dusk%2C%20demonstrating%20their%20spectacular%20flocking%20behavior&width=300&height=200&seq=41&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=European%20starlings%20nesting%20in%20building%20crevices%2C%20ventilation%20systems%2C%20or%20other%20urban%20structures%2C%20showing%20how%20they%20exploit%20human%20architecture%20for%20nesting%20sites&width=300&height=200&seq=42&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20close-up%20of%20a%20European%20starling%5Cs%20iridescent%20plumage%20showing%20the%20metallic%20purples%2C%20greens%2C%20and%20blues%20that%20give%20the%20bird%20its%20distinctive%20appearance%20despite%20being%20considered%20a%20pest%20species&width=300&height=200&seq=43&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=European%20starlings%20feeding%20in%20an%20agricultural%20setting%2C%20showing%20large%20numbers%20of%20birds%20consuming%20crops%20or%20competing%20with%20livestock%20for%20feed%2C%20illustrating%20their%20economic%20impact&width=300&height=200&seq=44&orientation=landscape'
+                    ],
+                    characteristics: 'European starlings are medium-sized songbirds with glossy black plumage that displays an iridescent sheen of purples, greens, and blues. They have a distinctive triangular silhouette in flight with short, pointed wings. Adults are 7-9 inches long and weigh 2-3 ounces. During breeding season, they have yellow bills that transition to dark gray in winter. Their plumage develops white speckles during winter months. Starlings are excellent vocal mimics, capable of imitating other bird calls, human speech, and environmental sounds.',
+                    habitat: 'Originally native to Europe, parts of Asia, and North Africa, European starlings were introduced to North America in the 1890s and have since spread across the continent. They are highly adaptable and thrive in human-modified environments including urban centers, suburbs, agricultural areas, and grasslands. They readily utilize man-made structures for nesting and roosting, including buildings, bridges, streetlights, and nest boxes intended for native cavity-nesting birds.',
+                    behavior: 'Starlings are highly social birds that form large, sometimes enormous flocks, particularly during non-breeding seasons. These flocks can contain thousands or even millions of birds and create spectacular aerial displays called murmurations. They are aggressive competitors for nesting cavities, often displacing native cavity-nesting birds. Starlings are omnivorous with a diet that includes insects, fruits, seeds, nectar, and human food waste. They are considered beneficial in some agricultural contexts for insect control but damaging in others due to crop consumption.',
+                    conflict: 'Human-starling conflicts stem from their abundance, gregarious nature, and adaptability to human environments. Large urban roosts create noise issues and accumulations of droppings that can damage property, create slip hazards, and potentially spread disease. Agricultural impacts include consumption of fruits and grains and competition with livestock for feed at animal operations. Ecological impacts center on competition with native cavity-nesting birds for limited nesting sites. Large flocks near airports pose aviation safety hazards through bird strikes.',
+                    population: 'North American European starling populations are estimated at 200+ million birds, making them one of the continent\'s most abundant bird species despite being non-native. Global population is estimated at 600+ million individuals. In North America, they are considered an invasive species and are not protected by the Migratory Bird Treaty Act, allowing for more management flexibility than with native species. Control efforts include exclusion from buildings, modification of roosting sites, harassment techniques for urban roosts, and in agricultural settings, various deterrent methods.',
+                    region: 'North America, Europe'
+                },
+                'nutria': {
+                    name: 'Nutria',
+                    scientificName: 'Myocastor coypus',
+                    threatLevel: 'Medium',
+                    mainImage: 'https://readdy.ai/api/search-image?query=A%20detailed%20photograph%20of%20a%20coypu%20or%20nutria%20%28Myocastor%20coypus%29%20in%20a%20wetland%20environment%20that%20shows%20signs%20of%20damage.%20The%20large%20rodent%20has%20brown%20fur%2C%20prominent%20orange%20front%20teeth%2C%20and%20distinctive%20white%20whiskers.%20It%20is%20partially%20in%20water%20near%20a%20bank%20that%20shows%20evidence%20of%20erosion%20and%20damaged%20vegetation%20from%20its%20feeding%20and%20burrowing%20activities.%20The%20image%20captures%20the%20animal%5Cs%20rat-like%20appearance%20but%20much%20larger%20size%2C%20highlighting%20its%20destructive%20impact%20on%20wetland%20ecosystems%20and%20water%20management%20infrastructure&width=1200&height=600&seq=45&orientation=landscape',
+                    gallery: [
+                        'https://readdy.ai/api/search-image?query=A%20close-up%20of%20a%20nutria%5Cs%20distinctive%20features%2C%20showing%20its%20orange%20incisor%20teeth%2C%20whiskers%2C%20and%20webbed%20hind%20feet%20that%20make%20it%20well-adapted%20for%20semi-aquatic%20life&width=300&height=200&seq=46&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20nutria%20feeding%20on%20wetland%20vegetation%2C%20showing%20how%20it%20consumes%20plant%20roots%20and%20stems%20at%20the%20water%5Cs%20edge%2C%20contributing%20to%20wetland%20degradation&width=300&height=200&seq=47&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20wetland%20area%20showing%20extensive%20damage%20from%20nutria%20activity%2C%20with%20eroded%20banks%2C%20destroyed%20vegetation%2C%20and%20disturbed%20soil%20illustrating%20their%20environmental%20impact&width=300&height=200&seq=48&orientation=landscape',
+                        'https://readdy.ai/api/search-image?query=A%20nutria%20with%20young%20offspring%20in%20a%20wetland%20setting%2C%20demonstrating%20their%20reproductive%20capacity%20and%20family%20groups%20that%20contribute%20to%20their%20invasive%20success&width=300&height=200&seq=49&orientation=landscape'
+                    ],
+                    characteristics: 'Nutria (also called coypu) are large, semi-aquatic rodents that resemble oversized rats or small beavers. Adults typically weigh 15-20 pounds and measure 17-25 inches in body length plus a 13-16 inch round, scaly tail. They have dark brown fur, prominent orange incisor teeth, white whiskers, and webbed hind feet for swimming. Females have an unusual anatomical feature: mammary glands positioned high on the sides of the body, allowing young to nurse while the mother is in water.',
+                    habitat: 'Originally native to South America, nutria have been introduced worldwide for fur farming and have established invasive populations on every continent except Antarctica and Australia. They are semi-aquatic and inhabit freshwater marshes, swamps, slow-moving streams, and drainage canals. They require permanent water bodies with abundant vegetation but can utilize a variety of wetland types. In their invasive range, they often occupy degraded or human-modified wetlands including agricultural irrigation systems.',
+                    behavior: 'Nutria are primarily crepuscular but may be active throughout the day in areas with minimal disturbance. They are social animals that live in groups consisting of related females, their young, and a dominant male. They are excellent swimmers and can remain submerged for up to 5 minutes. Nutria are herbivores with a diet consisting primarily of wetland plants, particularly the bases and roots of emergent vegetation. They construct platforms of vegetation for feeding, resting, and birthing. Their burrowing behavior along shorelines can undermine banks and water control structures.',
+                    conflict: 'Human-nutria conflicts center around their destructive impact on wetland ecosystems and water management infrastructure. Their feeding habits can convert vegetated wetlands to open water through consumption of plant roots and rhizomes, accelerating coastal erosion and wetland loss. Their burrowing damages levees, dikes, and irrigation structures, potentially causing failures and flooding. Agricultural impacts include consumption of crops and damage to field irrigation systems. They may also compete with native wildlife for resources and serve as vectors for parasites and diseases.',
+                    population: 'Global nutria populations are difficult to estimate but number in the millions across their introduced range. In the United States, they are established in at least 16 states, with the largest populations in the Gulf Coast region. Their success as invasive species is attributed to their high reproductive capacity (breeding year-round with 2-3 litters annually of 4-6 young each), generalist herbivore diet, and adaptability to various wetland types. Management approaches include trapping, hunting (including commercial harvest in some regions), exclusion from sensitive areas, and in some cases, large-scale eradication efforts.',
+                    region: 'North America, Europe'
+                }
+            };
+            
+            // Open modal with species details
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const speciesId = this.getAttribute('data-species');
+                    const species = speciesData[speciesId];
+                    
+                    if (species) {
+                        modalTitle.textContent = `${species.name} (${species.scientificName})`;
+                        
+                        // Generate modal content
+                        const content = `
+                            <div>
+                                <div class="relative">
+                                    <img src="${species.mainImage}" alt="${species.name}" class="w-full h-[400px] object-cover object-top rounded-lg">
+                                    <div class="absolute top-4 right-4 ${species.threatLevel === 'High' ? 'bg-red-500' : species.threatLevel === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'} text-white px-3 py-1 rounded font-medium">
+                                        ${species.threatLevel} Threat Level
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6">
+                                    <div class="flex border-b border-gray-200">
+                                        <button class="tab-button px-4 py-2 border-b-2 border-primary text-primary font-medium" data-tab="characteristics">Characteristics</button>
+                                        <button class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium" data-tab="habitat">Habitat & Distribution</button>
+                                        <button class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium" data-tab="behavior">Behavior</button>
+                                        <button class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium" data-tab="conflict">Human Conflict</button>
+                                        <button class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium" data-tab="population">Population Status</button>
+                                    </div>
+                                    
+                                    <div class="py-4">
+                                        <div id="characteristics" class="tab-content active">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-3">Physical Characteristics</h3>
+                                            <p class="text-gray-700">${species.characteristics}</p>
+                                        </div>
+                                        
+                                        <div id="habitat" class="tab-content">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-3">Habitat & Distribution</h3>
+                                            <p class="text-gray-700 mb-6">${species.habitat}</p>
+                                            
+                                            <h4 class="text-lg font-bold text-gray-900 mb-3">Geographic Range</h4>
+                                            <div class="distribution-map h-[300px] rounded-lg mb-3"></div>
+                                            <p class="text-gray-500 text-sm">Primary range: ${species.region}</p>
+                                        </div>
+                                        
+                                        <div id="behavior" class="tab-content">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-3">Behavior Patterns</h3>
+                                            <p class="text-gray-700">${species.behavior}</p>
+                                        </div>
+                                        
+                                        <div id="conflict" class="tab-content">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-3">Human Conflict Points</h3>
+                                            <p class="text-gray-700">${species.conflict}</p>
+                                        </div>
+                                        
+                                        <div id="population" class="tab-content">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-3">Population Status</h3>
+                                            <p class="text-gray-700">${species.population}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-3">Image Gallery</h3>
+                                    <div class="grid grid-cols-4 gap-3">
+                                        <div class="gallery-main-container h-[300px] col-span-2 row-span-2 bg-gray-100 rounded-lg overflow-hidden">
+                                            <img id="galleryMainImage" src="${species.gallery[0]}" alt="${species.name}" class="w-full h-full object-cover object-top">
+                                        </div>
+                                        ${species.gallery.map((img, index) => `
+                                            <div class="gallery-thumb h-[145px] bg-gray-100 rounded-lg overflow-hidden ${index === 0 ? 'active' : ''}" data-src="${img}">
+                                                <img src="${img}" alt="${species.name} ${index + 1}" class="w-full h-full object-cover object-top">
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-8 flex flex-col md:flex-row gap-4 justify-between">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-3">Prevention Tips</h3>
+                                        <ul class="space-y-2">
+                                            <li class="flex items-start">
+                                                <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                                    <i class="ri-checkbox-circle-line"></i>
+                                                </div>
+                                                <span class="text-gray-700">Secure trash and food sources to avoid attracting animals</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                                    <i class="ri-checkbox-circle-line"></i>
+                                                </div>
+                                                <span class="text-gray-700">Install appropriate fencing or barriers around vulnerable areas</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                                    <i class="ri-checkbox-circle-line"></i>
+                                                </div>
+                                                <span class="text-gray-700">Use deterrents appropriate for the species in question</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <div class="w-5 h-5 flex items-center justify-center text-primary mr-2 mt-0.5">
+                                                    <i class="ri-checkbox-circle-line"></i>
+                                                </div>
+                                                <span class="text-gray-700">Contact wildlife authorities for persistent problems</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="flex flex-col gap-3">
+                                        <button class="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-blue-600 transition-colors whitespace-nowrap flex items-center justify-center">
+                                            <div class="w-5 h-5 flex items-center justify-center mr-2">
+                                                <i class="ri-file-download-line"></i>
+                                            </div>
+                                            Download Species Guide
+                                        </button>
+                                        <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-button font-medium hover:bg-gray-50 transition-colors whitespace-nowrap flex items-center justify-center">
+                                            <div class="w-5 h-5 flex items-center justify-center mr-2">
+                                                <i class="ri-share-line"></i>
+                                            </div>
+                                            Share Information
+                                        </button>
+                                        <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-button font-medium hover:bg-gray-50 transition-colors whitespace-nowrap flex items-center justify-center">
+                                            <div class="w-5 h-5 flex items-center justify-center mr-2">
+                                                <i class="ri-bookmark-line"></i>
+                                            </div>
+                                            Save to Bookmarks
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        modalContent.innerHTML = content;
+                        modal.classList.remove('hidden');
+                        
+                        // Tab functionality
+                        const tabButtons = modalContent.querySelectorAll('.tab-button');
+                        const tabContents = modalContent.querySelectorAll('.tab-content');
+                        
+                        tabButtons.forEach(button => {
+                            button.addEventListener('click', function() {
+                                const tabId = this.getAttribute('data-tab');
+                                
+                                // Update active tab button
+                                tabButtons.forEach(btn => {
+                                    btn.classList.remove('border-primary', 'text-primary');
+                                    btn.classList.add('border-transparent', 'text-gray-500');
+                                });
+                                this.classList.remove('border-transparent', 'text-gray-500');
+                                this.classList.add('border-primary', 'text-primary');
+                                
+                                // Update active tab content
+                                tabContents.forEach(content => {
+                                    content.classList.remove('active');
+                                });
+                                document.getElementById(tabId).classList.add('active');
+                            });
+                        });
+                        
+                        // Gallery functionality
+                        const galleryThumbs = modalContent.querySelectorAll('.gallery-thumb');
+                        const galleryMainImage = modalContent.querySelector('#galleryMainImage');
+                        
+                        galleryThumbs.forEach(thumb => {
+                            thumb.addEventListener('click', function() {
+                                const imgSrc = this.getAttribute('data-src');
+                                galleryMainImage.src = imgSrc;
+                                
+                                galleryThumbs.forEach(t => t.classList.remove('active'));
+                                this.classList.add('active');
+                            });
+                        });
+                    }
+                });
+            });
+            
+            // Close modal
+            closeModal.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+            
+            // Close modal when clicking outside content
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+
+    <script id="chartScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Annual Human-Wildlife Conflicts Chart
+            const conflictChart = echarts.init(document.getElementById('conflictChart'));
+            const conflictOption = {
+                animation: false,
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderColor: '#e2e8f0',
+                    textStyle: {
+                        color: '#1f2937'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    top: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Deer', 'Wild Boar', 'Black Bear', 'Coyote', 'Raccoon', 'Geese', 'Starlings', 'Nutria'],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#1f2937',
+                        rotate: 0
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Reported Conflicts (thousands)',
+                    nameTextStyle: {
+                        color: '#1f2937'
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#1f2937'
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: '#f1f5f9'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Reported Conflicts',
+                        type: 'bar',
+                        data: [245, 187, 112, 98, 76, 58, 42, 31],
+                        itemStyle: {
+                            color: 'rgba(87, 181, 231, 1)',
+                            borderRadius: [5, 5, 0, 0]
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: 'rgba(87, 181, 231, 0.8)'
+                            }
+                        }
+                    }
+                ]
+            };
+            conflictChart.setOption(conflictOption);
+            
+            // Property Damage Cost Chart
+            const damageChart = echarts.init(document.getElementById('damageChart'));
+            const damageOption = {
+                animation: false,
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderColor: '#e2e8f0',
+                    textStyle: {
+                        color: '#1f2937'
+                    }
+                },
+                legend: {
+                    orient: 'vertical',
+                    right: 10,
+                    top: 'center',
+                    textStyle: {
+                        color: '#1f2937'
+                    }
+                },
+                series: [
+                    {
+                        name: 'Damage Cost',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '14',
+                                fontWeight: 'bold',
+                                color: '#1f2937'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            { value: 42, name: 'Northeast', itemStyle: { color: 'rgba(87, 181, 231, 1)' } },
+                            { value: 28, name: 'Southeast', itemStyle: { color: 'rgba(141, 211, 199, 1)' } },
+                            { value: 18, name: 'Midwest', itemStyle: { color: 'rgba(251, 191, 114, 1)' } },
+                            { value: 12, name: 'West', itemStyle: { color: 'rgba(252, 141, 98, 1)' } }
+                        ]
+                    }
+                ]
+            };
+            damageChart.setOption(damageOption);
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                conflictChart.resize();
+                damageChart.resize();
+            });
+        });
+    </script>
+
+    <script id="checkboxScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Custom checkbox functionality
+            const checkboxes = document.querySelectorAll('.custom-checkbox input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    // Any additional functionality can be added here
+                });
+            });
+            
+            // Custom switch functionality
+            const switches = document.querySelectorAll('.custom-switch input[type="checkbox"]');
+            switches.forEach(switchEl => {
+                switchEl.addEventListener('change', function() {
+                    // Any additional functionality can be added here
+                });
+            });
+        });
+    </script>
+</body>
+</html>
